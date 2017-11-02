@@ -18,7 +18,7 @@ const nick = "Moter8"
 const password = ""
 
 func main() {
-
+        updateNick()
 	c := cron.New()
 	c.AddFunc("@hourly", updateNick)
 
