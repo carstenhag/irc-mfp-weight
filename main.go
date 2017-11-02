@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+"os"
 	"os/exec"
-	"strings"
+"os/signal"	
+"strings"
 
 	"github.com/robfig/cron"
 	irc "github.com/thoj/go-ircevent"
@@ -19,7 +21,11 @@ func main() {
 
 	c := cron.New()
 	c.AddFunc("@hourly", updateNick)
-	c.Start()
+
+	go c.Start()
+	sig := make(chan os.Signal)
+	signal.Notify(sig, os.Interrupt, os.Kill)
+	<-sig
 
 }
 
