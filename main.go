@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-"os"
+	"os"
 	"os/exec"
-"os/signal"	
-"strings"
+	"os/signal"	
+	"strings"
 
 	"github.com/robfig/cron"
 	irc "github.com/thoj/go-ircevent"
@@ -18,9 +18,9 @@ const nick = "Moter8"
 const password = ""
 
 func main() {
-        updateNick()
+	updateTopic()
 	c := cron.New()
-	c.AddFunc("@hourly", updateNick)
+	c.AddFunc("@hourly", updateTopic)
 
 	go c.Start()
 	sig := make(chan os.Signal)
@@ -29,17 +29,39 @@ func main() {
 
 }
 
-func updateNick() {
-	ircnick := "Moter"
+func updateTopic() {
+	ircnick := nick
 	irccon := irc.IRC(ircnick, ircnick)
 	irccon.VerboseCallbackHandler = true
 	irccon.Debug = true
 	irccon.Password = password
 	irccon.UseTLS = true
 
+
 	irccon.AddCallback("001", func(e *irc.Event) {
 		irccon.Join("#dach")
-		go irccon.Nick(getFormattedNick(getCurrentWeight()))
+	})
+
+	irccon.AddCallback("332", func(e *irc.Event) {
+		fmt.Println(e.Raw)
+		channel := strings.Split(e.Raw, " ")[3]
+
+		if (channel != "#dach") {
+			fmt.Println("wrong channel", channel)
+			return
+		}
+		fmt.Println("MESSAGE" + e.Message())
+
+		topic := e.Message()
+		index := strings.LastIndex(topic, "Gewicht:")
+		if(index < 0) {
+			return
+		}
+
+		topic = topic[:index+1] + " "
+		topic += getFormattedWeight(getCurrentWeight())
+		irccon.SendRaw("TOPIC " + channel + " " + topic)
+
 		irccon.Quit()
 	})
 
@@ -51,8 +73,8 @@ func updateNick() {
 	irccon.Loop()
 }
 
-func getFormattedNick(weight string) string {
-	formattedNick := "Moter" + strings.Replace(weight, ".", "`", 1) + "kg"
+func getFormattedWeight(weight string) string {
+	formattedNick := weight + " kg"
 	fmt.Println(formattedNick)
 	return formattedNick
 }
