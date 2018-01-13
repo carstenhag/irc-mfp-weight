@@ -33,7 +33,7 @@ func updateTopic() {
 	ircnick := nick
 	irccon := irc.IRC(ircnick, ircnick)
 	irccon.VerboseCallbackHandler = true
-	irccon.Debug = true
+	irccon.Debug = false
 	irccon.Password = password
 	irccon.UseTLS = true
 
@@ -45,22 +45,27 @@ func updateTopic() {
 	irccon.AddCallback("332", func(e *irc.Event) {
 		fmt.Println(e.Raw)
 		channel := strings.Split(e.Raw, " ")[3]
+		oldTopic := strings.TrimSpace(e.Message())
 
 		if (channel != "#dach") {
 			fmt.Println("wrong channel", channel)
 			return
 		}
-		fmt.Println("MESSAGE" + e.Message())
 
-		topic := e.Message()
+		topic := oldTopic
 		index := strings.LastIndex(topic, "Gewicht:")
 		if(index < 0) {
 			return
 		}
 
-		topic = topic[:index+1] + " "
+		topic = topic[:index+8] + " "
 		topic += getFormattedWeight(getCurrentWeight())
-		irccon.SendRaw("TOPIC " + channel + " " + topic)
+
+		topic = strings.TrimSpace(topic)
+		if(oldTopic != topic) {
+			fmt.Println("\n\n", oldTopic, "\n\n", topic, "\n\n")
+			irccon.SendRaw("TOPIC " + channel + " " + topic)
+		}
 
 		irccon.Quit()
 	})
@@ -74,7 +79,7 @@ func updateTopic() {
 }
 
 func getFormattedWeight(weight string) string {
-	formattedNick := weight + " kg"
+	formattedNick := weight + "kg"
 	fmt.Println(formattedNick)
 	return formattedNick
 }
