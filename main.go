@@ -90,6 +90,7 @@ func getFormattedWeight(weight string) string {
 func getCurrentWeight() string {
 	path, err := exec.LookPath("python3")
 	if err != nil {
+		fmt.Println("Error finding python3 executable in PATH")
 		log.Fatal(err)
 	}
 
@@ -97,10 +98,12 @@ func getCurrentWeight() string {
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
+		fmt.Println("Error opening Stdout")
 		log.Fatal(err)
 	}
 
 	if err := cmd.Start(); err != nil {
+		fmt.Println("Error starting the command/opening the script")
 		log.Fatal(err)
 	}
 
@@ -108,6 +111,7 @@ func getCurrentWeight() string {
 	fmt.Printf("%s\n", slurp)
 
 	if err := cmd.Wait(); err != nil {
+		fmt.Println("Error with the command, see https://golang.org/pkg/os/exec/#Cmd.Wait")
 		log.Fatal(err)
 	}
 

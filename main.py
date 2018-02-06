@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 import myfitnesspal
 
 client = myfitnesspal.Client('moter8')
