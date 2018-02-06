@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"os/signal"	
+	"os/signal"
 	"strings"
 
 	"github.com/robfig/cron"
@@ -37,7 +37,6 @@ func updateTopic() {
 	irccon.Password = password
 	irccon.UseTLS = true
 
-
 	irccon.AddCallback("001", func(e *irc.Event) {
 		irccon.Join("#dach")
 	})
@@ -47,22 +46,26 @@ func updateTopic() {
 		channel := strings.Split(e.Raw, " ")[3]
 		oldTopic := strings.TrimSpace(e.Message())
 
-		if (channel != "#dach") {
+		if channel != "#dach" {
 			fmt.Println("wrong channel", channel)
 			return
 		}
 
 		topic := oldTopic
 		index := strings.LastIndex(topic, "Gewicht:")
-		if(index < 0) {
+		if index < 0 {
 			return
 		}
 
 		topic = topic[:index+8] + " "
-		topic += getFormattedWeight(getCurrentWeight())
+		weight := strings.TrimSpace(getCurrentWeight())
+		if weight == "" {
+			return
+		}
+		topic += getFormattedWeight(weight)
 
 		topic = strings.TrimSpace(topic)
-		if(oldTopic != topic) {
+		if oldTopic != topic {
 			fmt.Println("\n\n", oldTopic, "\n\n", topic, "\n\n")
 			irccon.SendRaw("TOPIC " + channel + " " + topic)
 		}
