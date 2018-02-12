@@ -112,7 +112,7 @@ func getCurrentWeight() string {
 
 	if err := cmd.Wait(); err != nil {
 		fmt.Println("Error with the command, see https://golang.org/pkg/os/exec/#Cmd.Wait")
-		log.Fatal(err)
+		fmt.Println(err) // Prints error, but doesn't exit. Just tries again in the next hour.
 	}
 
 	return strings.TrimSpace(string(slurp))
